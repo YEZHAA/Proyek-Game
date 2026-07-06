@@ -10,6 +10,8 @@ var _skill_btn: TextureButton
 var _bestiary_btn: TextureButton
 var _panel: PanelContainer
 
+const TOP_BAR_HEIGHT := 80.0
+
 
 func _ready() -> void:
 	layer = 1
@@ -30,9 +32,15 @@ func _ready() -> void:
 	style.border_color = Color(0.25, 0.22, 0.35, 0.4)
 	_panel.add_theme_stylebox_override("panel", style)
 	_panel.position = Vector2(0, 0)
-	_panel.size = Vector2(GameData.VIEWPORT_SIZE.x, 80)
+	_panel.size = Vector2(_get_viewport_width(), TOP_BAR_HEIGHT)
+
+	var content := Control.new()
+	content.name = "HudContent"
+	content.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	var hbox := HBoxContainer.new()
+	hbox.name = "HudRow"
+	hbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	hbox.add_theme_constant_override("separation", 8)
 	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
 
@@ -50,16 +58,18 @@ func _ready() -> void:
 	_dewdrop_label.text = "0.0"
 	_dewdrop_label.add_theme_font_size_override("font_size", 28)
 	_dewdrop_label.add_theme_color_override("font_color", Color(0.6, 0.85, 1.0))
-	_dewdrop_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hbox.add_child(_dewdrop_label)
 
 	# ── Income rate (small secondary text) ──
 	_income_label = Label.new()
 	_income_label.name = "IncomeRateLabel"
 	_income_label.text = "+0.0/s"
+	_income_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_income_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_income_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_income_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_income_label.add_theme_font_size_override("font_size", 14)
 	_income_label.add_theme_color_override("font_color", Color(0.5, 0.7, 0.5, 0.7))
-	hbox.add_child(_income_label)
 
 	# ── Spacer ──
 	var spacer := Control.new()
@@ -80,12 +90,24 @@ func _ready() -> void:
 	menu_btn.pressed.connect(func(): get_tree().change_scene_to_file("res://src/main_menu.tscn"))
 	hbox.add_child(menu_btn)
 
-	_panel.add_child(hbox)
+	content.add_child(hbox)
+	content.add_child(_income_label)
+	_panel.add_child(content)
 	add_child(_panel)
+
+	get_viewport().size_changed.connect(_sync_panel_size)
 
 	# ── Connect signals ──
 	GameManager.dewdrops_changed.connect(_on_dewdrops_changed)
 	_on_dewdrops_changed(GameManager.dewdrops)
+
+
+func _get_viewport_width() -> float:
+	return get_viewport().get_visible_rect().size.x
+
+
+func _sync_panel_size() -> void:
+	_panel.size = Vector2(_get_viewport_width(), TOP_BAR_HEIGHT)
 
 
 func _make_icon_btn(texture_name: String, overlay_name: String, btn_name: String) -> TextureButton:
