@@ -124,8 +124,12 @@ func _process(_delta: float) -> void:
 
 func _format_number(n: float) -> String:
 	if n < 1000.0:
-		return "%.1f" % n
+		return _format_one_decimal_floor(n)
 	elif n < 1_000_000.0:
-		return "%.1fK" % (n / 1000.0)
+		return "%sK" % _format_one_decimal_floor(n / 1000.0)
 	else:
-		return "%.2fM" % (n / 1_000_000.0)
+		return "%.2fM" % (floor((n / 1_000_000.0) * 100.0) / 100.0)
+
+
+func _format_one_decimal_floor(n: float) -> String:
+	return "%.1f" % (floor(n * 10.0) / 10.0)

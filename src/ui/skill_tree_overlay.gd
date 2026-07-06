@@ -248,8 +248,12 @@ func _make_skill_node(skill_id: String, index: int, current_level: int, tier: in
 	btn.add_theme_stylebox_override("pressed", style_hover)
 	btn.add_theme_font_size_override("font_size", 14)
 
-	if can_buy:
-		btn.pressed.connect(func() -> void: GameManager.try_buy_skill(skill_id))
+	btn.set_meta("kind", "tier")
+	btn.set_meta("skill_id", skill_id)
+	btn.set_meta("index", index)
+	btn.set_meta("tier", tier)
+	btn.set_meta("cost", cost)
+	btn.pressed.connect(func() -> void: _try_buy_skill_node(skill_id, index))
 
 	_skill_buttons[unique_key] = btn
 	return btn
@@ -347,8 +351,11 @@ func _make_global_dot_button(skill_id: String, index: int, current_level: int, c
 	btn.add_theme_color_override("font_color", Color(0.9, 0.95, 1.0) if is_purchased else Color(0.4, 0.45, 0.5))
 	btn.add_theme_font_size_override("font_size", 18)
 
-	if can_buy:
-		btn.pressed.connect(func() -> void: GameManager.try_buy_skill(skill_id))
+	btn.set_meta("kind", "global")
+	btn.set_meta("skill_id", skill_id)
+	btn.set_meta("index", index)
+	btn.set_meta("cost", cost)
+	btn.pressed.connect(func() -> void: _try_buy_skill_node(skill_id, index))
 
 	_skill_buttons[unique_key] = btn
 	return btn
@@ -380,7 +387,29 @@ func _on_skill_purchased(_skill_id: String) -> void:
 
 
 func _refresh_affordability() -> void:
-	# Lightweight refresh — only update button states without full rebuild
-	# For simplicity, rebuild (fast enough for ~30 buttons)
-	if _is_open:
-		_build_tree()
+	# Keep button instances alive while passive income changes Dewdrops.
+	# Rebuilding here can swallow a valid click between mouse-down and mouse-up.
+	for key in _skill_buttons:
+		var btn: Button = _skill_buttons[key]
+		if not is_instance_valid(btn):
+			continue
+		var skill_id: String = str(btn.get_meta("skill_id", ""))
+		var index: int = int(btn.get_meta("index", 0))
+		var cost: float = float(btn.get_meta("cost", 0.0))
+		var current_level: int = GameManager.skill_levels.get(skill_id, 0)
+		var is_purchased: bool = index < current_level
+		var can_buy: bool = index == current_level and GameManager.can_afford(cost)
+		if btn.get_meta("kind", "") == "tier":
+			can_buy = can_buy and _is_tier_branch_available(int(btn.get_meta("tier", 0)))
+		btn.disabled = not can_buy and not is_purchased
+		btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND if can_buy else Control.CURSOR_ARROW
+
+
+func _try_buy_skill_node(skill_id: String, index: int) -> void:
+	if index != int(GameManager.skill_levels.get(skill_id, 0)):
+		return
+	if skill_id.begins_with("tier_"):
+		var tier := int(skill_id.split("_")[1])
+		if not _is_tier_branch_available(tier):
+			return
+	GameManager.try_buy_skill(skill_id)
