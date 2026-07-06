@@ -12,6 +12,8 @@ var _creature_arrival: Control
 var _tutorial: CanvasLayer
 
 func _ready():
+	GameManager.set_game_input_locked(not GameManager.tutorial_done)
+
 	# 1. Background
 	_bg = ColorRect.new()
 	_bg.color = GameData.BG_COLOR
@@ -24,6 +26,7 @@ func _ready():
 	var grid_script = load("res://src/grid/game_grid.gd")
 	if grid_script:
 		_grid = grid_script.new()
+		_grid.name = "GameGrid"
 		add_child(_grid)
 		print("Grid added, child count: ", _grid.get_child_count())
 	else:

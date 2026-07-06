@@ -10,6 +10,7 @@ signal flora_planted(pos: Vector2i, tier: int)
 signal flora_tapped(pos: Vector2i)
 signal tap_bar_harvested(pos: Vector2i, amount: float)
 signal creature_arrived(creature_id: String)
+signal creature_arrival_finished(creature_id: String)
 signal skill_purchased(skill_id: String)
 signal tier_unlocked(tier: int)
 signal game_over()
@@ -31,6 +32,7 @@ var unlocked_tiers: Array[int] = [1]
 var cleared_count: int = 0
 var is_ended: bool = false
 var tutorial_done: bool = false
+var game_input_locked: bool = false
 var game_time: float = 0.0
 var last_save_time: float = 0.0
 
@@ -113,6 +115,8 @@ func can_clear(pos: Vector2i) -> bool:
 # ─── Tile Actions ────────────────────────────────────────────────────────────
 
 func try_clear(pos: Vector2i) -> bool:
+	if game_input_locked:
+		return false
 	if not can_clear(pos):
 		return false
 	var cost := Economy.get_clear_cost(cleared_count)
@@ -127,6 +131,8 @@ func try_clear(pos: Vector2i) -> bool:
 
 
 func try_plant(pos: Vector2i, tier: int) -> bool:
+	if game_input_locked:
+		return false
 	if tile_states.get(pos) != "clear":
 		return false
 	if tier not in unlocked_tiers:
@@ -145,6 +151,8 @@ func try_plant(pos: Vector2i, tier: int) -> bool:
 # ─── Tapping ─────────────────────────────────────────────────────────────────
 
 func do_tap(pos: Vector2i) -> void:
+	if game_input_locked:
+		return
 	if pos not in flora_map:
 		return
 	flora_map[pos].taps += 1
@@ -156,6 +164,14 @@ func do_tap(pos: Vector2i) -> void:
 		earn_dewdrops(harvest)
 		flora_map[pos].taps = 0
 		tap_bar_harvested.emit(pos, harvest)
+
+
+func notify_creature_arrival_finished(creature_id: String) -> void:
+	creature_arrival_finished.emit(creature_id)
+
+
+func set_game_input_locked(is_locked: bool) -> void:
+	game_input_locked = is_locked
 
 
 # ─── Skill Tree ──────────────────────────────────────────────────────────────

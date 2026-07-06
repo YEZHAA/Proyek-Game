@@ -227,6 +227,7 @@ func _input(event: InputEvent) -> void:
 
 
 func _dismiss() -> void:
+	var dismissed_creature := _current_creature
 	_is_showing = false
 	_can_dismiss = false
 	var tween := create_tween()
@@ -237,4 +238,5 @@ func _dismiss() -> void:
 		for c in get_children():
 			c.queue_free()
 		_particles.clear()
+		GameManager.notify_creature_arrival_finished(dismissed_creature)
 	)

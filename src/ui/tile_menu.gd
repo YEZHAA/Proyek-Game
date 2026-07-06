@@ -24,6 +24,9 @@ func _ready() -> void:
 
 
 func _on_show(pos: Vector2i, screen_pos: Vector2) -> void:
+	if GameManager.game_input_locked:
+		return
+
 	_target_pos = pos
 	position = screen_pos  # Move node to tile screen location
 	visible = true
@@ -144,6 +147,9 @@ func _draw() -> void:
 
 
 func _input(event: InputEvent) -> void:
+	if GameManager.game_input_locked:
+		return
+
 	if not _is_visible:
 		return
 

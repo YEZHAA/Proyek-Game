@@ -66,7 +66,12 @@ func setup(pos: Vector2i):
 	if state == "planted" and pos in GameManager.flora_map:
 		_create_flora(GameManager.flora_map[pos].tier)
 
-func _on_input(viewport: Node, event: InputEvent, shape_idx: int):
+func _on_input(_viewport: Node, event: InputEvent, _shape_idx: int):
+	if GameManager.game_input_locked:
+		if event is InputEventMouseButton:
+			get_viewport().set_input_as_handled()
+		return
+
 	if event is InputEventMouseButton and event.pressed:
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			match state:
