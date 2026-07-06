@@ -102,10 +102,18 @@ func spend(amount: float) -> bool:
 	return true
 
 
+func can_clear(pos: Vector2i) -> bool:
+	if tile_states.get(pos) != "barren":
+		return false
+	if flora_map.is_empty():
+		return false
+	return can_afford(Economy.get_clear_cost(cleared_count))
+
+
 # ─── Tile Actions ────────────────────────────────────────────────────────────
 
 func try_clear(pos: Vector2i) -> bool:
-	if tile_states.get(pos) != "barren":
+	if not can_clear(pos):
 		return false
 	var cost := Economy.get_clear_cost(cleared_count)
 	if not spend(cost):
@@ -220,7 +228,7 @@ func _check_creature_triggers() -> void:
 			arrived_creatures.append(creature_id)
 			creature_arrived.emit(creature_id)
 			if creature_id == "kirin":
-				_trigger_ending()
+				_check_game_end()
 			break  # one creature arrival at a time
 
 
@@ -233,6 +241,8 @@ func _update_heart_tree() -> void:
 
 
 func _check_game_end() -> void:
+	if "kirin" not in arrived_creatures:
+		return
 	for pos in tile_states:
 		if tile_states[pos] == "barren":
 			return

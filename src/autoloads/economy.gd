@@ -7,9 +7,10 @@ extends Node
 
 
 ## Returns the Dewdrop cost to Clear the next Barren tile.
-## Polynomial: base + increment × cleared_count, then discount.
+## Polynomial: base + linear + quadratic pressure, then discount.
 func get_clear_cost(cleared_count: int) -> float:
-	var base := GameData.CLEAR_COST_BASE + GameData.CLEAR_COST_INC * float(cleared_count)
+	var cleared := float(cleared_count)
+	var base := GameData.CLEAR_COST_BASE + GameData.CLEAR_COST_INC * cleared + GameData.CLEAR_COST_QUAD * cleared * cleared
 	var discount_level: int = 0
 	if GameManager:
 		discount_level = GameManager.skill_levels.get("clear_discount", 0)

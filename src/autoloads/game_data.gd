@@ -159,6 +159,7 @@ const GLOBAL_SKILLS: Dictionary = {
 # ─── Economy Tuning ──────────────────────────────────────────────────────────
 const CLEAR_COST_BASE := 3.0
 const CLEAR_COST_INC := 2.0
+const CLEAR_COST_QUAD := 1.2
 const TAP_BAR_MAX := 15
 const TAP_HARVEST_MULT := 10.0
 const OFFLINE_BASE_MINUTES := 30.0

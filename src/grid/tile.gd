@@ -138,7 +138,6 @@ func _set_hovered(is_hovered: bool) -> void:
 
 func _draw():
 	if _hover and state == "barren":
-		var cost = Economy.get_clear_cost(GameManager.cleared_count)
-		var can = GameManager.can_afford(cost)
+		var can = GameManager.can_clear(grid_pos)
 		var col = Color(0.5, 1, 0.5) if can else Color(1, 0.5, 0.5)
 		draw_circle(Vector2(24, -24), 4, col)
