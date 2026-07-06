@@ -9,6 +9,7 @@ var _current_creature: String = ""
 var _can_dismiss: bool = false
 var _particles: Array[Dictionary] = []
 var _particle_time: float = 0.0
+var _creature_particle_center := Vector2(GameData.VIEWPORT_SIZE.x * 0.5, 276.0)
 
 const PARTICLE_COUNT: int = 24
 
@@ -65,6 +66,7 @@ func _show_arrival() -> void:
 	sprite.pivot_offset = Vector2(96, 96)
 	sprite.scale = Vector2(0.4, 0.4)
 	sprite.modulate.a = 0.0
+	_creature_particle_center = sprite.position + sprite.pivot_offset
 	add_child(sprite)
 
 	# ── Decorative divider line ──
@@ -201,7 +203,7 @@ func _draw() -> void:
 		return
 
 	# Draw floating particles around the creature
-	var center := Vector2(288.0, 276.0)  # Center of sprite area
+	var center := _creature_particle_center
 	for p in _particles:
 		var current_angle: float = p.angle + _particle_time * p.speed
 		var wobble: float = sin(_particle_time * 2.0 + p.phase) * 15.0
