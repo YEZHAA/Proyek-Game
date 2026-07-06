@@ -16,6 +16,7 @@ signal tier_unlocked(tier: int)
 signal game_over()
 signal show_tile_menu(pos: Vector2i, screen_pos: Vector2)
 signal hide_tile_menu()
+signal seed_menu_focus_changed(is_focused: bool)
 signal show_overlay(overlay_name: String)
 signal hide_overlay()
 signal tutorial_advance(step: String)
@@ -33,6 +34,7 @@ var cleared_count: int = 0
 var is_ended: bool = false
 var tutorial_done: bool = false
 var game_input_locked: bool = false
+var seed_menu_focused: bool = false
 var game_time: float = 0.0
 var last_save_time: float = 0.0
 
@@ -172,6 +174,13 @@ func notify_creature_arrival_finished(creature_id: String) -> void:
 
 func set_game_input_locked(is_locked: bool) -> void:
 	game_input_locked = is_locked
+
+
+func set_seed_menu_focused(is_focused: bool) -> void:
+	if seed_menu_focused == is_focused:
+		return
+	seed_menu_focused = is_focused
+	seed_menu_focus_changed.emit(seed_menu_focused)
 
 
 # ─── Skill Tree ──────────────────────────────────────────────────────────────

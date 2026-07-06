@@ -27,6 +27,7 @@ func _on_show(pos: Vector2i, screen_pos: Vector2) -> void:
 	if GameManager.game_input_locked:
 		return
 
+	GameManager.set_seed_menu_focused(true)
 	_target_pos = pos
 	position = screen_pos  # Move node to tile screen location
 	visible = true
@@ -45,11 +46,13 @@ func _on_show(pos: Vector2i, screen_pos: Vector2) -> void:
 
 func _on_hide() -> void:
 	if not _is_visible:
+		GameManager.set_seed_menu_focused(false)
 		return
 	visible = false
 	_is_visible = false
 	_buttons.clear()
 	_hover_index = -1
+	GameManager.set_seed_menu_focused(false)
 
 
 func _build_menu() -> void:

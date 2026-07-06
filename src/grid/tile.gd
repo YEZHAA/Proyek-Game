@@ -62,6 +62,7 @@ func setup(pos: Vector2i):
 	
 	GameManager.tile_changed.connect(_on_tile_changed)
 	GameManager.flora_planted.connect(_on_flora_planted)
+	GameManager.seed_menu_focus_changed.connect(_on_seed_menu_focus_changed)
 	
 	if state == "planted" and pos in GameManager.flora_map:
 		_create_flora(GameManager.flora_map[pos].tier)
@@ -135,14 +136,21 @@ func _set_tile_visual_scale(visual_scale: float) -> void:
 
 func _set_hovered(is_hovered: bool) -> void:
 	_hover = is_hovered
+	_refresh_highlight()
+
+func _on_seed_menu_focus_changed(_is_focused: bool) -> void:
+	_refresh_highlight()
+
+func _refresh_highlight() -> void:
+	var should_show := _hover and not GameManager.seed_menu_focused
 	if _highlight_fill:
-		_highlight_fill.visible = is_hovered
+		_highlight_fill.visible = should_show
 	if _highlight_outline:
-		_highlight_outline.visible = is_hovered
+		_highlight_outline.visible = should_show
 	queue_redraw()
 
 func _draw():
-	if _hover and state == "barren":
+	if _hover and not GameManager.seed_menu_focused and state == "barren":
 		var can = GameManager.can_clear(grid_pos)
 		var col = Color(0.5, 1, 0.5) if can else Color(1, 0.5, 0.5)
 		draw_circle(Vector2(24, -24), 4, col)
