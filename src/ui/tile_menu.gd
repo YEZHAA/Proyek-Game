@@ -19,7 +19,6 @@ func _ready() -> void:
 	visible = false
 	z_index = 10
 	GameManager.show_tile_menu.connect(_on_show)
-	GameManager.hide_tile_menu.connect(_on_hide)
 	GameManager.flora_planted.connect(func(_p: Vector2i, _t: int) -> void: _on_hide())
 
 

@@ -165,7 +165,6 @@ func _advance_tutorial() -> void:
 
 	_current_step = _step_queue[_step_index]
 	_is_active = true
-	GameManager.tutorial_advance.emit(_current_step)
 
 	_stop_pulse()
 

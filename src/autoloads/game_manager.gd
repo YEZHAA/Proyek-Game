@@ -15,11 +15,9 @@ signal skill_purchased(skill_id: String)
 signal tier_unlocked(tier: int)
 signal game_over()
 signal show_tile_menu(pos: Vector2i, screen_pos: Vector2)
-signal hide_tile_menu()
 signal seed_menu_focus_changed(is_focused: bool)
 signal show_overlay(overlay_name: String)
 signal hide_overlay()
-signal tutorial_advance(step: String)
 signal heart_tree_updated(luminance: float)
 
 # ─── State ───────────────────────────────────────────────────────────────────

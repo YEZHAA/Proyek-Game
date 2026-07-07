@@ -4,15 +4,11 @@ extends Node
 
 # ─── Grid & Display ──────────────────────────────────────────────────────────
 const GRID_SIZE := 16
-const TILE_SIZE := 64
-const GRID_OFFSET := Vector2(96, 180)  # centers 384px grid in 576px viewport (now obsolete with new math)
 const VIEWPORT_SIZE := Vector2(1280, 720)
 const STARTER_TILE := Vector2i(8, 8)
 
 # ─── Colors ──────────────────────────────────────────────────────────────────
 const BG_COLOR := Color(0.10, 0.09, 0.14)
-const BARREN_COLOR := Color(0.22, 0.18, 0.15)
-const CLEAR_COLOR := Color(0.18, 0.32, 0.20)
 
 # ─── Flora (tier → data) ────────────────────────────────────────────────────
 ## Each tier strictly outclasses the previous. Production is dewdrops/second.
