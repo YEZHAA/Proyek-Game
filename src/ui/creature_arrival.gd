@@ -9,6 +9,7 @@ var _current_creature: String = ""
 var _can_dismiss: bool = false
 var _particles: Array[Dictionary] = []
 var _particle_time: float = 0.0
+var _particle_alpha: float = 0.0
 var _creature_particle_center := Vector2(GameData.VIEWPORT_SIZE.x * 0.5, 276.0)
 
 const PARTICLE_COUNT: int = 24
@@ -31,6 +32,7 @@ func _show_arrival() -> void:
 	_is_showing = true
 	_can_dismiss = false
 	_particle_time = 0.0
+	_particle_alpha = 0.0
 
 	# Clear previous children
 	for c in get_children():
@@ -142,6 +144,7 @@ func _show_arrival() -> void:
 	# Phase 3: Creature materializes (scale up + fade in)
 	tween.tween_property(sprite, "modulate:a", 1.0, 0.6).set_ease(Tween.EASE_OUT)
 	tween.parallel().tween_property(sprite, "scale", Vector2(1.0, 1.0), 0.6).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+	tween.parallel().tween_property(self, "_particle_alpha", 1.0, 0.8).set_ease(Tween.EASE_OUT)
 
 	# Phase 4: Subtle bounce
 	tween.tween_property(sprite, "scale", Vector2(1.05, 1.05), 0.15).set_ease(Tween.EASE_OUT)
@@ -174,13 +177,13 @@ func _init_particles(base_color: Color) -> void:
 		var angle: float = randf() * TAU
 		var dist: float = randf_range(60.0, 200.0)
 		var speed: float = randf_range(0.3, 1.2)
-		var size: float = randf_range(1.5, 4.0)
+		var particle_size: float = randf_range(1.5, 4.0)
 		var phase: float = randf() * TAU
 		_particles.append({
 			"angle": angle,
 			"dist": dist,
 			"speed": speed,
-			"size": size,
+			"size": particle_size,
 			"phase": phase,
 			"color": Color(
 				base_color.r + randf_range(-0.1, 0.1),
@@ -201,6 +204,8 @@ func _process(delta: float) -> void:
 func _draw() -> void:
 	if not _is_showing:
 		return
+	if _particle_alpha <= 0.0:
+		return
 
 	# Draw floating particles around the creature
 	var center := _creature_particle_center
@@ -211,7 +216,7 @@ func _draw() -> void:
 			cos(current_angle) * (p.dist + wobble),
 			sin(current_angle) * (p.dist + wobble) * 0.7  # Slight ellipse
 		)
-		var alpha: float = p.color.a * (0.5 + 0.5 * sin(_particle_time * 1.5 + p.phase))
+		var alpha: float = p.color.a * _particle_alpha * (0.5 + 0.5 * sin(_particle_time * 1.5 + p.phase))
 		draw_circle(pos, p.size, Color(p.color.r, p.color.g, p.color.b, alpha))
 
 
