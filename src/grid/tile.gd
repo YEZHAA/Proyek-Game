@@ -17,6 +17,10 @@ const TILE_AXIS_X := Vector2(2, 1)
 const TILE_AXIS_Y := Vector2(-2, 1)
 const TILE_VISUAL_SCALE := 1.0
 const CLEAR_POP_SCALE := 1.18
+const CLEAR_PRICE_ICON_POS := Vector2(24, -24)
+const CLEAR_PRICE_ICON_SIZE := Vector2(12, 12)
+const CLEAR_PRICE_TEXT_OFFSET := Vector2(9, 4)
+const CLEAR_PRICE_FONT_SIZE := 11
 
 var grid_pos: Vector2i = Vector2i.ZERO
 var state: String = "barren"
@@ -31,6 +35,7 @@ var _area: Area2D
 func setup(pos: Vector2i):
 	grid_pos = pos
 	state = GameManager.tile_states.get(pos, "barren")
+	set_process(false)
 	
 	_sprite = Sprite2D.new()
 	_sprite.texture = SpriteGen.get_texture("tile_barren" if state == "barren" else "tile_clear")
@@ -121,7 +126,7 @@ func _on_tile_changed(pos: Vector2i, new_state: String):
 			_set_tile_visual_scale(TILE_VISUAL_SCALE)
 	if _grid_outline:
 		_grid_outline.default_color = _get_grid_outline_color()
-	queue_redraw()
+	_refresh_highlight()
 
 func _on_flora_planted(pos: Vector2i, tier: int):
 	if pos != grid_pos: return
@@ -148,11 +153,16 @@ func _set_hovered(is_hovered: bool) -> void:
 	_hover = is_hovered
 	_refresh_highlight()
 
+func _process(_delta: float) -> void:
+	queue_redraw()
+
 func _on_seed_menu_focus_changed(_is_focused: bool) -> void:
 	_refresh_highlight()
 
 func _refresh_highlight() -> void:
 	var should_show := _hover and not GameManager.seed_menu_focused
+	var should_show_clear_price := should_show and state == "barren"
+	set_process(should_show_clear_price)
 	if _highlight_fill:
 		_highlight_fill.visible = should_show
 	if _highlight_outline:
@@ -169,8 +179,25 @@ func _get_grid_outline_color() -> Color:
 			return Color(0.72, 0.96, 0.58, 0.26)
 	return Color(1, 1, 1, 0.16)
 
+func _format_clear_price(cost: float) -> String:
+	if cost < 1000.0:
+		return "%.1f" % (floor(cost * 10.0) / 10.0)
+	if cost < 1_000_000.0:
+		return "%.1fK" % (floor((cost / 1000.0) * 10.0) / 10.0)
+	return "%.2fM" % (floor((cost / 1_000_000.0) * 100.0) / 100.0)
+
 func _draw():
 	if _hover and not GameManager.seed_menu_focused and state == "barren":
-		var can = GameManager.can_clear(grid_pos)
-		var col = Color(0.5, 1, 0.5) if can else Color(1, 0.5, 0.5)
-		draw_circle(Vector2(24, -24), 4, col)
+		var can_clear := GameManager.can_clear(grid_pos)
+		var clear_cost := Economy.get_clear_cost(GameManager.cleared_count)
+		var price_color := Color(0.66, 1.0, 0.64) if can_clear else Color(1.0, 0.5, 0.45)
+
+		var icon_texture := SpriteGen.get_texture("dewdrop")
+		var icon_rect := Rect2(CLEAR_PRICE_ICON_POS - CLEAR_PRICE_ICON_SIZE * 0.5, CLEAR_PRICE_ICON_SIZE)
+		draw_texture_rect(icon_texture, icon_rect, false, Color.WHITE)
+
+		var price_text := _format_clear_price(clear_cost)
+		var font := ThemeDB.fallback_font
+		var text_pos := CLEAR_PRICE_ICON_POS + CLEAR_PRICE_TEXT_OFFSET
+		draw_string(font, text_pos + Vector2(1, 1), price_text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, CLEAR_PRICE_FONT_SIZE, Color(0.02, 0.02, 0.03, 0.85))
+		draw_string(font, text_pos, price_text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, CLEAR_PRICE_FONT_SIZE, price_color)
