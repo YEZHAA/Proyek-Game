@@ -22,6 +22,7 @@ var grid_pos: Vector2i = Vector2i.ZERO
 var state: String = "barren"
 var flora_node: Node2D = null
 var _sprite: Sprite2D
+var _grid_outline: Line2D
 var _highlight_fill: Polygon2D
 var _highlight_outline: Line2D
 var _hover: bool = false
@@ -37,6 +38,12 @@ func setup(pos: Vector2i):
 	# Isometric transform for 16x16 tile to become 64x32 diamond
 	_set_tile_visual_scale(TILE_VISUAL_SCALE)
 	add_child(_sprite)
+
+	_grid_outline = Line2D.new()
+	_grid_outline.points = PackedVector2Array(TILE_DIAMOND_CLOSED)
+	_grid_outline.width = 1.0
+	_grid_outline.default_color = _get_grid_outline_color()
+	add_child(_grid_outline)
 	
 	_area = Area2D.new()
 	var shape = CollisionPolygon2D.new()
@@ -112,6 +119,9 @@ func _on_tile_changed(pos: Vector2i, new_state: String):
 		"planted":
 			_sprite.texture = SpriteGen.get_texture("tile_clear")
 			_set_tile_visual_scale(TILE_VISUAL_SCALE)
+	if _grid_outline:
+		_grid_outline.default_color = _get_grid_outline_color()
+	queue_redraw()
 
 func _on_flora_planted(pos: Vector2i, tier: int):
 	if pos != grid_pos: return
@@ -148,6 +158,16 @@ func _refresh_highlight() -> void:
 	if _highlight_outline:
 		_highlight_outline.visible = should_show
 	queue_redraw()
+
+func _get_grid_outline_color() -> Color:
+	match state:
+		"barren":
+			return Color(0.44, 0.40, 0.50, 0.22)
+		"clear":
+			return Color(0.86, 0.96, 0.56, 0.22)
+		"planted":
+			return Color(0.72, 0.96, 0.58, 0.26)
+	return Color(1, 1, 1, 0.16)
 
 func _draw():
 	if _hover and not GameManager.seed_menu_focused and state == "barren":

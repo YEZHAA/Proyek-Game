@@ -154,9 +154,9 @@ func _fill_spans(img: Image, spans: Array, col: Color, inflate_x: int = 0, y_off
 
 func _make_barren() -> ImageTexture:
 	var img := _img(16, 16)
-	var base := Color(0.22, 0.18, 0.15)
-	var crack := Color(0.15, 0.12, 0.10)
-	var dark := Color(0.12, 0.10, 0.08)
+	var base := Color(0.27, 0.27, 0.32)
+	var crack := Color(0.18, 0.17, 0.22)
+	var dark := Color(0.13, 0.12, 0.16)
 
 	# Fill base earth
 	for y in range(16):
@@ -184,11 +184,11 @@ func _make_barren() -> ImageTexture:
 
 func _make_clear() -> ImageTexture:
 	var img := _img(16, 16)
-	var base := Color(0.22, 0.38, 0.22)
-	var light := Color(0.30, 0.50, 0.30)
-	var tuft := Color(0.28, 0.48, 0.28)
-	var flower1 := Color(0.9, 0.85, 0.3)
-	var flower2 := Color(0.85, 0.5, 0.6)
+	var base := Color(0.39, 0.53, 0.27)
+	var light := Color(0.56, 0.69, 0.34)
+	var tuft := Color(0.31, 0.48, 0.25)
+	var flower1 := Color(1.0, 0.87, 0.35)
+	var flower2 := Color(0.95, 0.55, 0.68)
 
 	# Fill grass base with subtle variation
 	for y in range(16):
@@ -738,18 +738,108 @@ func _make_kirin() -> ImageTexture:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 func _make_heart_tree() -> ImageTexture:
-	var img := _img(32, 48)
+	var img := _img(48, 64)
 	_draw_heart_tree_sprite(img, false)
 	return _tex(img)
 
 
 func _make_heart_tree_glow() -> ImageTexture:
-	var img := _img(32, 48)
+	var img := _img(48, 64)
 	_draw_heart_tree_sprite(img, true)
 	return _tex(img)
 
 
 func _draw_heart_tree_sprite(img: Image, restored: bool) -> void:
+	var bark_dark := Color(0.18, 0.10, 0.06)
+	var bark := Color(0.38, 0.23, 0.13)
+	var bark_mid := Color(0.54, 0.35, 0.19)
+	var bark_light := Color(0.70, 0.50, 0.28)
+	var leaf_outline := Color(0.10, 0.22, 0.14)
+	var leaf_shadow := Color(0.20, 0.38, 0.20)
+	var leaf := Color(0.33, 0.56, 0.28)
+	var leaf_mid := Color(0.48, 0.69, 0.34)
+	var leaf_light := Color(0.66, 0.82, 0.42)
+	var flower := Color(0.92, 0.48, 0.62)
+	var heart_light := Color(0.82, 0.66, 0.32)
+	var sparkle := Color(0.78, 0.86, 0.50)
+
+	if restored:
+		bark_dark = Color(0.24, 0.13, 0.07)
+		bark = Color(0.48, 0.30, 0.16)
+		bark_mid = Color(0.68, 0.45, 0.24)
+		bark_light = Color(0.88, 0.65, 0.34)
+		leaf_outline = Color(0.17, 0.35, 0.17)
+		leaf_shadow = Color(0.30, 0.56, 0.24)
+		leaf = Color(0.48, 0.74, 0.34)
+		leaf_mid = Color(0.66, 0.88, 0.45)
+		leaf_light = Color(0.86, 0.96, 0.58)
+		flower = Color(1.0, 0.62, 0.76)
+		heart_light = Color(1.0, 0.90, 0.40)
+		sparkle = Color(0.98, 1.0, 0.72)
+		for angle_i in range(48):
+			var angle := float(angle_i) * TAU / 48.0
+			_blend_px(img, int(24.0 + cos(angle) * 23.0), int(20.0 + sin(angle) * 19.0), Color(1.0, 0.94, 0.50, 0.34))
+			_blend_px(img, int(24.0 + cos(angle) * 26.0), int(20.0 + sin(angle) * 22.0), Color(0.58, 1.0, 0.54, 0.18))
+
+	_fill_ellipse(img, 24.0, 61.0, 17.0, 4.0, Color(0.08, 0.07, 0.05, 0.35))
+
+	_draw_pixel_line(img, Vector2i(22, 28), Vector2i(11, 21), bark_dark, 2)
+	_draw_pixel_line(img, Vector2i(27, 29), Vector2i(39, 23), bark_dark, 2)
+	_draw_pixel_line(img, Vector2i(21, 34), Vector2i(10, 38), bark_mid, 2)
+	_draw_pixel_line(img, Vector2i(28, 34), Vector2i(39, 39), bark_mid, 2)
+	_draw_pixel_line(img, Vector2i(24, 29), Vector2i(24, 62), bark_dark, 8)
+	_draw_pixel_line(img, Vector2i(23, 29), Vector2i(22, 62), bark, 5)
+	_draw_pixel_line(img, Vector2i(27, 32), Vector2i(28, 60), bark_mid, 3)
+	_draw_pixel_line(img, Vector2i(21, 39), Vector2i(19, 60), bark_dark, 2)
+	_draw_pixel_line(img, Vector2i(25, 44), Vector2i(27, 58), bark_light, 1)
+	_draw_pixel_line(img, Vector2i(22, 59), Vector2i(8, 63), bark_dark, 3)
+	_draw_pixel_line(img, Vector2i(27, 59), Vector2i(41, 63), bark_dark, 3)
+	_draw_pixel_line(img, Vector2i(20, 57), Vector2i(13, 63), bark_mid, 2)
+	_draw_pixel_line(img, Vector2i(29, 57), Vector2i(36, 63), bark_light, 2)
+
+	_fill_ellipse(img, 24.0, 19.0, 22.0, 15.0, leaf_outline)
+	_fill_circle(img, 12.0, 19.0, 10.0, leaf_outline)
+	_fill_circle(img, 36.0, 18.0, 10.0, leaf_outline)
+	_fill_circle(img, 24.0, 11.0, 13.0, leaf_outline)
+	_fill_circle(img, 21.0, 28.0, 12.0, leaf_outline)
+	_fill_circle(img, 31.0, 27.0, 10.0, leaf_outline)
+
+	_fill_ellipse(img, 24.0, 19.0, 20.0, 13.0, leaf)
+	_fill_circle(img, 12.0, 19.0, 8.0, leaf_shadow)
+	_fill_circle(img, 36.0, 18.0, 8.0, leaf_mid)
+	_fill_circle(img, 24.0, 11.0, 11.0, leaf_mid)
+	_fill_circle(img, 21.0, 28.0, 10.0, leaf)
+	_fill_circle(img, 31.0, 27.0, 8.0, leaf_light)
+	_fill_circle(img, 18.0, 13.0, 5.0, leaf_light)
+	_fill_circle(img, 33.0, 13.0, 5.0, leaf_light)
+	_fill_circle(img, 25.0, 21.0, 6.0, leaf_shadow)
+
+	for p in [
+		Vector2i(8, 20), Vector2i(16, 10), Vector2i(24, 7), Vector2i(34, 12),
+		Vector2i(40, 22), Vector2i(14, 29), Vector2i(27, 30), Vector2i(34, 26)
+	]:
+		_set_px(img, p.x, p.y, sparkle)
+	for p in [Vector2i(11, 14), Vector2i(19, 25), Vector2i(29, 14), Vector2i(38, 20), Vector2i(24, 32)]:
+		_set_px(img, p.x, p.y, flower)
+		_set_px(img, p.x + 1, p.y, Color(1.0, 0.76, 0.78))
+
+	for raw_vine_x in [15, 19, 32, 37]:
+		var vine_x: int = int(raw_vine_x)
+		var vine_len: int = 7 + (vine_x % 4)
+		_draw_pixel_line(img, Vector2i(vine_x, 28), Vector2i(vine_x - 1, 28 + vine_len), leaf_shadow, 1)
+		_set_px(img, vine_x - 1, 29 + vine_len, heart_light)
+
+	_fill_circle(img, 21.0, 44.0, 3.0, heart_light)
+	_fill_circle(img, 27.0, 44.0, 3.0, heart_light)
+	_draw_pixel_line(img, Vector2i(18, 45), Vector2i(24, 53), heart_light, 2)
+	_draw_pixel_line(img, Vector2i(30, 45), Vector2i(24, 53), heart_light, 2)
+	_fill_circle(img, 24.0, 47.0, 4.0, heart_light)
+	_blend_px(img, 24, 46, Color(1.0, 1.0, 0.80, 0.75))
+	_blend_px(img, 20, 42, Color(1.0, 0.88, 0.44, 0.45))
+	_blend_px(img, 28, 42, Color(1.0, 0.88, 0.44, 0.45))
+
+
+func _draw_heart_tree_sprite_legacy(img: Image, restored: bool) -> void:
 	var bark_dark := Color(0.17, 0.11, 0.08)
 	var bark := Color(0.35, 0.23, 0.15)
 	var bark_mid := Color(0.48, 0.33, 0.20)
