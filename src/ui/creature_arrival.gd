@@ -71,14 +71,6 @@ func _show_arrival() -> void:
 	_creature_particle_center = sprite.position + sprite.pivot_offset
 	add_child(sprite)
 
-	# ── Decorative divider line ──
-	var divider := ColorRect.new()
-	divider.name = "ArrivalDivider"
-	divider.color = Color(creature_color.r, creature_color.g, creature_color.b, 0.0)
-	divider.position = Vector2(GameData.VIEWPORT_SIZE.x / 2 - 100, 392)
-	divider.size = Vector2(200, 2)
-	add_child(divider)
-
 	# ── Name ──
 	var name_label := Label.new()
 	name_label.name = "ArrivalCreatureName"
@@ -86,7 +78,7 @@ func _show_arrival() -> void:
 	name_label.add_theme_font_size_override("font_size", 32)
 	name_label.add_theme_color_override("font_color", creature_color)
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_label.position = Vector2(0, 410)
+	name_label.position = Vector2(0, 380)
 	name_label.size = Vector2(GameData.VIEWPORT_SIZE.x, 50)
 	name_label.modulate.a = 0.0
 	add_child(name_label)
@@ -94,11 +86,11 @@ func _show_arrival() -> void:
 	# ── Subtitle (creature role) ──
 	var subtitle := Label.new()
 	subtitle.name = "ArrivalSubtitle"
-	subtitle.text = "— has arrived —"
+	subtitle.text = "has arrived"
 	subtitle.add_theme_font_size_override("font_size", 14)
 	subtitle.add_theme_color_override("font_color", Color(creature_color.r, creature_color.g, creature_color.b, 0.6))
 	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	subtitle.position = Vector2(0, 448)
+	subtitle.position = Vector2(0, 418)
 	subtitle.size = Vector2(GameData.VIEWPORT_SIZE.x, 25)
 	subtitle.modulate.a = 0.0
 	add_child(subtitle)
@@ -111,7 +103,7 @@ func _show_arrival() -> void:
 	lore.add_theme_color_override("font_color", Color(0.7, 0.7, 0.75))
 	lore.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	lore.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	lore.position = Vector2(GameData.VIEWPORT_SIZE.x / 2 - 240, 490)
+	lore.position = Vector2(GameData.VIEWPORT_SIZE.x / 2 - 240, 460)
 	lore.size = Vector2(480, 100)
 	lore.modulate.a = 0.0
 	add_child(lore)
@@ -119,7 +111,7 @@ func _show_arrival() -> void:
 	# ── "Tap to continue" hint ──
 	var hint := Label.new()
 	hint.name = "ArrivalDismissHint"
-	hint.text = "— tap to continue —"
+	hint.text = "tap to continue"
 	hint.add_theme_font_size_override("font_size", 14)
 	hint.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -150,19 +142,16 @@ func _show_arrival() -> void:
 	tween.tween_property(sprite, "scale", Vector2(1.05, 1.05), 0.15).set_ease(Tween.EASE_OUT)
 	tween.tween_property(sprite, "scale", Vector2(1.0, 1.0), 0.1).set_ease(Tween.EASE_IN)
 
-	# Phase 5: Divider extends
-	tween.tween_property(divider, "color:a", 0.5, 0.3)
-
-	# Phase 6: Name appears
+	# Phase 5: Name appears
 	tween.tween_property(name_label, "modulate:a", 1.0, 0.4).set_ease(Tween.EASE_OUT)
 
-	# Phase 7: Subtitle
+	# Phase 6: Subtitle
 	tween.tween_property(subtitle, "modulate:a", 1.0, 0.3)
 
-	# Phase 8: Lore fades in
+	# Phase 7: Lore fades in
 	tween.tween_property(lore, "modulate:a", 1.0, 0.5).set_ease(Tween.EASE_OUT)
 
-	# Phase 9: Dismiss hint pulses in
+	# Phase 8: Dismiss hint pulses in
 	tween.tween_property(hint, "modulate:a", 0.6, 0.3)
 	tween.tween_callback(func() -> void: _can_dismiss = true)
 
