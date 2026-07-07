@@ -114,6 +114,40 @@ func _blend_px(img: Image, x: int, y: int, col: Color) -> void:
 	img.set_pixel(x, y, blended)
 
 
+func _draw_pixel_line(img: Image, from_px: Vector2i, to_px: Vector2i, col: Color, width: int = 1) -> void:
+	var x0 := from_px.x
+	var y0 := from_px.y
+	var x1 := to_px.x
+	var y1 := to_px.y
+	var dx := absi(x1 - x0)
+	var sx := 1 if x0 < x1 else -1
+	var dy := -absi(y1 - y0)
+	var sy := 1 if y0 < y1 else -1
+	var err := dx + dy
+	var radius := maxi(0, floori(float(width) / 2.0))
+
+	while true:
+		for oy in range(-radius, radius + 1):
+			for ox in range(-radius, radius + 1):
+				if radius == 0 or ox * ox + oy * oy <= radius * radius:
+					_set_px(img, x0 + ox, y0 + oy, col)
+		if x0 == x1 and y0 == y1:
+			break
+		var e2 := 2 * err
+		if e2 >= dy:
+			err += dy
+			x0 += sx
+		if e2 <= dx:
+			err += dx
+			y0 += sy
+
+
+func _fill_spans(img: Image, spans: Array, col: Color, inflate_x: int = 0, y_offset: int = 0) -> void:
+	for span in spans:
+		var y := int(span[0]) + y_offset
+		_draw_line_h(img, y, int(span[1]) - inflate_x, int(span[2]) + inflate_x, col)
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # TILES (16×16)
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -705,109 +739,196 @@ func _make_kirin() -> ImageTexture:
 
 func _make_heart_tree() -> ImageTexture:
 	var img := _img(32, 48)
-	var trunk := Color(0.38, 0.28, 0.18)
-	var trunk_light := Color(0.45, 0.35, 0.22)
-	var canopy := Color(0.3, 0.55, 0.32)
-	var canopy_light := Color(0.4, 0.68, 0.42)
-	var highlight := Color(0.55, 0.78, 0.5)
-
-	# Trunk — bottom portion (rows 28-47), 6-8px wide centered
-	_fill_rect(img, 13, 28, 19, 48, trunk)
-	# Trunk bark detail
-	_set_px(img, 14, 32, trunk_light); _set_px(img, 17, 36, trunk_light)
-	_set_px(img, 15, 40, trunk_light); _set_px(img, 16, 44, trunk_light)
-	# Trunk widens at base
-	_fill_rect(img, 12, 44, 20, 48, trunk)
-	# Roots
-	_set_px(img, 11, 46, trunk); _set_px(img, 10, 47, trunk)
-	_set_px(img, 20, 46, trunk); _set_px(img, 21, 47, trunk)
-
-	# Branches extending up
-	_set_px(img, 12, 28, trunk); _set_px(img, 11, 27, trunk)
-	_set_px(img, 19, 28, trunk); _set_px(img, 20, 27, trunk)
-
-	# Heart-shaped canopy — two bumps plus pointed bottom
-	# Left bump
-	_fill_circle(img, 10.0, 12.0, 8.0, canopy)
-	# Right bump
-	_fill_circle(img, 22.0, 12.0, 8.0, canopy)
-	# Center fill to connect bumps
-	_fill_rect(img, 10, 8, 22, 24, canopy)
-	# Bottom point of heart
-	_fill_ellipse(img, 16.0, 24.0, 4.0, 5.0, canopy)
-
-	# Heart canopy highlights — lighter patches
-	_fill_circle(img, 8.0, 10.0, 4.0, canopy_light)
-	_fill_circle(img, 24.0, 10.0, 4.0, canopy_light)
-	_set_px(img, 16, 20, canopy_light)
-
-	# Small leaf details
-	_set_px(img, 4, 14, highlight); _set_px(img, 6, 9, highlight)
-	_set_px(img, 27, 14, highlight); _set_px(img, 25, 9, highlight)
-	_set_px(img, 16, 6, highlight); _set_px(img, 12, 18, highlight)
-	_set_px(img, 20, 18, highlight); _set_px(img, 10, 22, highlight)
-	_set_px(img, 22, 22, highlight)
-
+	_draw_heart_tree_sprite(img, false)
 	return _tex(img)
 
 
 func _make_heart_tree_glow() -> ImageTexture:
 	var img := _img(32, 48)
-	var trunk := Color(0.45, 0.35, 0.22)
-	var trunk_light := Color(0.55, 0.42, 0.28)
-	var canopy := Color(0.45, 0.72, 0.42)
-	var canopy_light := Color(0.6, 0.85, 0.55)
-	var highlight := Color(0.8, 0.95, 0.65)
-	var glow := Color(1.0, 0.95, 0.6, 0.4)
-
-	# Trunk (brighter)
-	_fill_rect(img, 13, 28, 19, 48, trunk)
-	_set_px(img, 14, 32, trunk_light); _set_px(img, 17, 36, trunk_light)
-	_set_px(img, 15, 40, trunk_light); _set_px(img, 16, 44, trunk_light)
-	_fill_rect(img, 12, 44, 20, 48, trunk)
-	_set_px(img, 11, 46, trunk); _set_px(img, 10, 47, trunk)
-	_set_px(img, 20, 46, trunk); _set_px(img, 21, 47, trunk)
-
-	# Branches
-	_set_px(img, 12, 28, trunk); _set_px(img, 11, 27, trunk)
-	_set_px(img, 19, 28, trunk); _set_px(img, 20, 27, trunk)
-
-	# Heart-shaped canopy (brighter)
-	_fill_circle(img, 10.0, 12.0, 8.0, canopy)
-	_fill_circle(img, 22.0, 12.0, 8.0, canopy)
-	_fill_rect(img, 10, 8, 22, 24, canopy)
-	_fill_ellipse(img, 16.0, 24.0, 4.0, 5.0, canopy)
-
-	# Bright highlights
-	_fill_circle(img, 8.0, 10.0, 4.0, canopy_light)
-	_fill_circle(img, 24.0, 10.0, 4.0, canopy_light)
-	_set_px(img, 16, 20, canopy_light)
-
-	# Luminous leaf details
-	_set_px(img, 4, 14, highlight); _set_px(img, 6, 9, highlight)
-	_set_px(img, 27, 14, highlight); _set_px(img, 25, 9, highlight)
-	_set_px(img, 16, 6, highlight); _set_px(img, 12, 18, highlight)
-	_set_px(img, 20, 18, highlight); _set_px(img, 10, 22, highlight)
-	_set_px(img, 22, 22, highlight)
-
-	# Glow aura around canopy
-	for angle_i in range(24):
-		var angle := float(angle_i) * TAU / 24.0
-		var gx := int(16.0 + cos(angle) * 13.0)
-		var gy := int(12.0 + sin(angle) * 13.0)
-		_blend_px(img, gx, gy, glow)
-		gx = int(16.0 + cos(angle) * 14.0)
-		gy = int(12.0 + sin(angle) * 14.0)
-		_blend_px(img, gx, gy, Color(glow.r, glow.g, glow.b, 0.2))
-
-	# Extra sparkle dots
-	_set_px(img, 3, 6, highlight); _set_px(img, 28, 6, highlight)
-	_set_px(img, 1, 12, highlight); _set_px(img, 30, 12, highlight)
-
+	_draw_heart_tree_sprite(img, true)
 	return _tex(img)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
+func _draw_heart_tree_sprite(img: Image, restored: bool) -> void:
+	var bark_dark := Color(0.17, 0.11, 0.08)
+	var bark := Color(0.35, 0.23, 0.15)
+	var bark_mid := Color(0.48, 0.33, 0.20)
+	var bark_light := Color(0.63, 0.44, 0.25)
+	var leaf_outline := Color(0.13, 0.24, 0.17)
+	var leaf_shadow := Color(0.20, 0.38, 0.24)
+	var leaf := Color(0.31, 0.56, 0.33)
+	var leaf_mid := Color(0.41, 0.66, 0.38)
+	var leaf_light := Color(0.59, 0.78, 0.47)
+	var heart_light := Color(0.76, 0.65, 0.34)
+	var sparkle := Color(0.72, 0.88, 0.56)
+
+	if restored:
+		bark_dark = Color(0.22, 0.14, 0.09)
+		bark = Color(0.46, 0.31, 0.18)
+		bark_mid = Color(0.62, 0.43, 0.24)
+		bark_light = Color(0.82, 0.60, 0.34)
+		leaf_outline = Color(0.20, 0.38, 0.22)
+		leaf_shadow = Color(0.32, 0.58, 0.30)
+		leaf = Color(0.48, 0.75, 0.39)
+		leaf_mid = Color(0.63, 0.86, 0.48)
+		leaf_light = Color(0.84, 0.96, 0.62)
+		heart_light = Color(1.0, 0.90, 0.42)
+		sparkle = Color(0.98, 1.0, 0.72)
+		_draw_heart_tree_aura(img)
+
+	var heart_spans := [
+		[2, 8, 13], [2, 19, 24],
+		[3, 6, 15], [3, 17, 26],
+		[4, 5, 27],
+		[5, 3, 29],
+		[6, 2, 30],
+		[7, 2, 30],
+		[8, 1, 31],
+		[9, 1, 31],
+		[10, 1, 31],
+		[11, 2, 30],
+		[12, 2, 30],
+		[13, 2, 30],
+		[14, 3, 29],
+		[15, 3, 29],
+		[16, 4, 28],
+		[17, 5, 27],
+		[18, 5, 27],
+		[19, 6, 26],
+		[20, 7, 25],
+		[21, 8, 24],
+		[22, 9, 23],
+		[23, 10, 22],
+		[24, 11, 21],
+		[25, 12, 20],
+		[26, 13, 19],
+		[27, 14, 18],
+		[28, 15, 17],
+	]
+
+	var trunk_spans := [
+		[26, 15, 17],
+		[27, 14, 18],
+		[28, 13, 19],
+		[29, 13, 19],
+		[30, 13, 18],
+		[31, 12, 18],
+		[32, 12, 18],
+		[33, 12, 18],
+		[34, 12, 19],
+		[35, 12, 19],
+		[36, 12, 19],
+		[37, 12, 20],
+		[38, 12, 20],
+		[39, 12, 20],
+		[40, 11, 20],
+		[41, 11, 20],
+		[42, 11, 21],
+		[43, 10, 21],
+		[44, 10, 22],
+		[45, 9, 23],
+		[46, 8, 24],
+		[47, 7, 25],
+	]
+
+	_draw_heart_tree_wood(img, trunk_spans, bark_dark, bark, bark_mid, bark_light)
+	_fill_spans(img, heart_spans, leaf_outline, 1, -1)
+	_fill_spans(img, heart_spans, leaf_outline, 1, 1)
+	_fill_spans(img, heart_spans, leaf_outline, 1)
+	_fill_spans(img, heart_spans, leaf)
+	_draw_heart_tree_leaf_texture(img, leaf_shadow, leaf_mid, leaf_light, heart_light, sparkle, restored)
+
+
+func _draw_heart_tree_wood(
+	img: Image,
+	trunk_spans: Array,
+	bark_dark: Color,
+	bark: Color,
+	bark_mid: Color,
+	bark_light: Color
+) -> void:
+	_draw_pixel_line(img, Vector2i(15, 27), Vector2i(8, 22), bark_dark, 2)
+	_draw_pixel_line(img, Vector2i(17, 27), Vector2i(24, 22), bark_dark, 2)
+	_draw_pixel_line(img, Vector2i(15, 27), Vector2i(10, 24), bark_mid, 1)
+	_draw_pixel_line(img, Vector2i(17, 27), Vector2i(22, 24), bark_mid, 1)
+
+	_fill_spans(img, trunk_spans, bark_dark, 1)
+	_fill_spans(img, trunk_spans, bark)
+
+	_draw_pixel_line(img, Vector2i(10, 45), Vector2i(3, 47), bark_dark, 2)
+	_draw_pixel_line(img, Vector2i(22, 45), Vector2i(29, 47), bark_dark, 2)
+	_draw_pixel_line(img, Vector2i(14, 45), Vector2i(9, 47), bark_mid, 1)
+	_draw_pixel_line(img, Vector2i(18, 45), Vector2i(24, 47), bark_mid, 1)
+
+	_draw_pixel_line(img, Vector2i(16, 27), Vector2i(14, 35), bark_mid, 1)
+	_draw_pixel_line(img, Vector2i(14, 35), Vector2i(17, 43), bark_light, 1)
+	_draw_pixel_line(img, Vector2i(18, 30), Vector2i(16, 37), bark_dark, 1)
+	_draw_pixel_line(img, Vector2i(13, 39), Vector2i(15, 46), bark_dark, 1)
+	_set_px(img, 17, 33, bark_light)
+	_set_px(img, 13, 31, bark_light)
+	_set_px(img, 19, 41, bark_mid)
+
+
+func _draw_heart_tree_leaf_texture(
+	img: Image,
+	leaf_shadow: Color,
+	leaf_mid: Color,
+	leaf_light: Color,
+	heart_light: Color,
+	sparkle: Color,
+	restored: bool
+) -> void:
+	_draw_line_h(img, 5, 4, 11, leaf_mid)
+	_draw_line_h(img, 5, 21, 28, leaf_mid)
+	_draw_line_h(img, 6, 5, 14, leaf_mid)
+	_draw_line_h(img, 6, 18, 27, leaf_mid)
+	_draw_line_h(img, 9, 3, 10, leaf_shadow)
+	_draw_line_h(img, 10, 23, 29, leaf_shadow)
+	_draw_line_h(img, 15, 4, 9, leaf_shadow)
+	_draw_line_h(img, 16, 22, 27, leaf_shadow)
+	_draw_line_h(img, 22, 10, 14, leaf_shadow)
+	_draw_line_h(img, 23, 18, 22, leaf_shadow)
+
+	_fill_circle(img, 8.0, 9.0, 3.0, leaf_light)
+	_fill_circle(img, 24.0, 9.0, 3.0, leaf_light)
+	_fill_circle(img, 16.0, 13.0, 2.5, leaf_mid)
+	_fill_circle(img, 12.0, 18.0, 2.0, leaf_mid)
+	_fill_circle(img, 20.0, 18.0, 2.0, leaf_mid)
+
+	_draw_pixel_line(img, Vector2i(16, 25), Vector2i(16, 15), heart_light, 1)
+	_draw_pixel_line(img, Vector2i(16, 17), Vector2i(10, 11), heart_light, 1)
+	_draw_pixel_line(img, Vector2i(16, 17), Vector2i(22, 11), heart_light, 1)
+	_set_px(img, 15, 26, heart_light)
+	_set_px(img, 17, 26, heart_light)
+
+	_set_px(img, 6, 13, sparkle)
+	_set_px(img, 11, 7, sparkle)
+	_set_px(img, 21, 7, sparkle)
+	_set_px(img, 26, 13, sparkle)
+	_set_px(img, 9, 21, sparkle)
+	_set_px(img, 23, 21, sparkle)
+	_set_px(img, 16, 4, sparkle)
+
+	if restored:
+		_set_px(img, 4, 7, sparkle)
+		_set_px(img, 28, 7, sparkle)
+		_set_px(img, 2, 16, sparkle)
+		_set_px(img, 30, 16, sparkle)
+		_set_px(img, 16, 29, heart_light)
+
+
+func _draw_heart_tree_aura(img: Image) -> void:
+	var warm := Color(1.0, 0.90, 0.42, 0.36)
+	var green := Color(0.68, 1.0, 0.58, 0.18)
+	for angle_i in range(36):
+		var angle := float(angle_i) * TAU / 36.0
+		_blend_px(img, int(16.0 + cos(angle) * 15.0), int(14.0 + sin(angle) * 13.0), warm)
+		_blend_px(img, int(16.0 + cos(angle) * 17.0), int(14.0 + sin(angle) * 15.0), green)
+
+	for p in [Vector2i(3, 6), Vector2i(29, 6), Vector2i(1, 13), Vector2i(31, 13), Vector2i(7, 28), Vector2i(25, 28)]:
+		_blend_px(img, p.x, p.y, Color(1.0, 0.96, 0.65, 0.5))
+
+
 # UI ELEMENTS & ICONS
 # ═══════════════════════════════════════════════════════════════════════════════
 
